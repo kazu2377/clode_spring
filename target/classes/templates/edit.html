@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>タスク編集 - 進捗管理アプリ</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="container">
+        <h1>タスク編集</h1>
+        
+        <div class="form-section">
+            <form th:action="@{/tasks/{id}/update(id=${task.id})}" method="post" th:object="${task}">
+                <div class="form-group">
+                    <label for="title">タイトル:</label>
+                    <input type="text" id="title" th:field="*{title}" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">説明:</label>
+                    <textarea id="description" th:field="*{description}"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="priority">優先度:</label>
+                        <select id="priority" th:field="*{priority}">
+                            <option value="1">低</option>
+                            <option value="2">中</option>
+                            <option value="3">高</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="status">ステータス:</label>
+                        <select id="status" th:field="*{status}">
+                            <option value="TODO">未開始</option>
+                            <option value="IN_PROGRESS">進行中</option>
+                            <option value="COMPLETED">完了</option>
+                            <option value="CANCELLED">キャンセル</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="progress">進捗 (%):</label>
+                    <input type="number" id="progress" th:field="*{progress}" min="0" max="100">
+                </div>
+                <div class="task-actions">
+                    <button type="submit" class="btn btn-success">更新</button>
+                    <a th:href="@{/}" class="btn">キャンセル</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

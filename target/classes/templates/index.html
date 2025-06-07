@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>進捗管理アプリ</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="container">
+        <h1>進捗管理アプリ</h1>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number" th:text="${todoCount}">0</div>
+                <div class="stat-label">未開始</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" th:text="${inProgressCount}">0</div>
+                <div class="stat-label">進行中</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" th:text="${completedCount}">0</div>
+                <div class="stat-label">完了</div>
+            </div>
+        </div>
+
+        <div class="search-box">
+            <form th:action="@{/search}" method="get">
+                <input type="text" name="keyword" placeholder="タスクを検索..." required>
+                <button type="submit" class="btn">検索</button>
+            </form>
+        </div>
+
+        <div class="form-section">
+            <h2>新しいタスクを追加</h2>
+            <form th:action="@{/tasks}" method="post" th:object="${newTask}">
+                <div class="form-group">
+                    <label for="title">タイトル:</label>
+                    <input type="text" id="title" th:field="*{title}" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">説明:</label>
+                    <textarea id="description" th:field="*{description}"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="priority">優先度:</label>
+                        <select id="priority" th:field="*{priority}">
+                            <option value="1">低</option>
+                            <option value="2" selected>中</option>
+                            <option value="3">高</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="status">ステータス:</label>
+                        <select id="status" th:field="*{status}">
+                            <option value="TODO" selected>未開始</option>
+                            <option value="IN_PROGRESS">進行中</option>
+                            <option value="COMPLETED">完了</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn">タスクを追加</button>
+            </form>
+        </div>
+
+        <div class="task-list">
+            <h2>タスク一覧</h2>
+            <div th:if="${tasks.empty}" class="no-tasks">
+                タスクがありません。新しいタスクを追加してください。
+            </div>
+            <div th:each="task : ${tasks}" class="task-item">
+                <div class="task-header">
+                    <h3 class="task-title" th:text="${task.title}">タスクタイトル</h3>
+                    <span class="task-status" 
+                          th:class="'task-status status-' + ${#strings.toLowerCase(task.status)}"
+                          th:text="${task.status == 'TODO' ? '未開始' : 
+                                   task.status == 'IN_PROGRESS' ? '進行中' : 
+                                   task.status == 'COMPLETED' ? '完了' : 'キャンセル'}">
+                        ステータス
+                    </span>
+                </div>
+                
+                <p class="task-description" th:text="${task.description}">タスクの説明</p>
+                
+                <div class="task-meta">
+                    <span class="task-priority"
+                          th:class="'task-priority priority-' + ${task.priority == 3 ? 'high' : task.priority == 2 ? 'medium' : 'low'}"
+                          th:text="'優先度: ' + ${task.priority == 3 ? '高' : task.priority == 2 ? '中' : '低'}">
+                        優先度: 中
+                    </span>
+                    <span th:text="'作成日: ' + ${#temporals.format(task.createdAt, 'yyyy/MM/dd HH:mm')}">作成日</span>
+                </div>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill" th:style="'width: ' + ${task.progress} + '%'"></div>
+                </div>
+                <div th:text="'進捗: ' + ${task.progress} + '%'">進捗</div>
+                
+                <div class="task-actions">
+                    <a th:href="@{/tasks/{id}/edit(id=${task.id})}" class="btn">編集</a>
+                    
+                    <form th:action="@{/tasks/{id}/progress(id=${task.id})}" method="post" style="display: inline;">
+                        <input type="number" name="progress" min="0" max="100" th:value="${task.progress}" style="width: 60px;">
+                        <button type="submit" class="btn btn-warning">進捗更新</button>
+                    </form>
+                    
+                    <form th:action="@{/tasks/{id}/status(id=${task.id})}" method="post" style="display: inline;">
+                        <select name="status" onchange="this.form.submit()">
+                            <option value="TODO" th:selected="${task.status == 'TODO'}">未開始</option>
+                            <option value="IN_PROGRESS" th:selected="${task.status == 'IN_PROGRESS'}">進行中</option>
+                            <option value="COMPLETED" th:selected="${task.status == 'COMPLETED'}">完了</option>
+                            <option value="CANCELLED" th:selected="${task.status == 'CANCELLED'}">キャンセル</option>
+                        </select>
+                    </form>
+                    
+                    <form th:action="@{/tasks/{id}/delete(id=${task.id})}" method="post" style="display: inline;"
+                          onsubmit="return confirm('このタスクを削除しますか？')">
+                        <button type="submit" class="btn btn-danger">削除</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
