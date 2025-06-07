@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ガントチャート - 進捗管理アプリ</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/gantt.css}">
+</head>
+<body>
+    <div class="container">
+        <div class="gantt-header">
+            <h1>ガントチャート</h1>
+            <div class="gantt-controls">
+                <a th:href="@{/}" class="btn">タスク一覧に戻る</a>
+            </div>
+        </div>
+        
+        <div class="gantt-container">
+            <div id="gantt-chart"></div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/gantt.js}"></script>
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            const tasks = /*[[${tasks}]]*/ [];
+            
+            // タスクデータを変換
+            const processedTasks = tasks.map(task => ({
+                id: task.id,
+                title: task.title,
+                description: task.description,
+                status: task.status,
+                priority: task.priority,
+                progress: task.progress,
+                startDate: task.startDate,
+                endDate: task.endDate,
+                createdAt: task.createdAt,
+                updatedAt: task.updatedAt,
+                dueDate: task.dueDate
+            }));
+            
+            // ガントチャートを初期化
+            new GanttChart('gantt-chart', processedTasks);
+        });
+    </script>
+</body>
+</html>

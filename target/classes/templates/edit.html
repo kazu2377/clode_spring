@@ -43,6 +43,16 @@
                     <label for="progress">進捗 (%):</label>
                     <input type="number" id="progress" th:field="*{progress}" min="0" max="100">
                 </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="startDate">開始日:</label>
+                        <input type="datetime-local" id="startDate" th:field="*{startDate}">
+                    </div>
+                    <div class="form-group">
+                        <label for="endDate">終了日:</label>
+                        <input type="datetime-local" id="endDate" th:field="*{endDate}">
+                    </div>
+                </div>
                 <div class="task-actions">
                     <button type="submit" class="btn btn-success">更新</button>
                     <a th:href="@{/}" class="btn">キャンセル</a>

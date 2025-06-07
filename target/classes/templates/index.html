@@ -29,6 +29,7 @@
             <form th:action="@{/search}" method="get">
                 <input type="text" name="keyword" placeholder="タスクを検索..." required>
                 <button type="submit" class="btn">検索</button>
+                <a th:href="@{/gantt}" class="btn btn-warning">ガントチャート</a>
             </form>
         </div>
 
@@ -61,6 +62,16 @@
                         </select>
                     </div>
                 </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="startDate">開始日:</label>
+                        <input type="datetime-local" id="startDate" th:field="*{startDate}">
+                    </div>
+                    <div class="form-group">
+                        <label for="endDate">終了日:</label>
+                        <input type="datetime-local" id="endDate" th:field="*{endDate}">
+                    </div>
+                </div>
                 <button type="submit" class="btn">タスクを追加</button>
             </form>
         </div>
@@ -91,6 +102,13 @@
                         優先度: 中
                     </span>
                     <span th:text="'作成日: ' + ${#temporals.format(task.createdAt, 'yyyy/MM/dd HH:mm')}">作成日</span>
+                </div>
+                
+                <div class="task-meta" th:if="${task.startDate != null or task.endDate != null}">
+                    <span th:if="${task.startDate != null}" 
+                          th:text="'開始日: ' + ${#temporals.format(task.startDate, 'yyyy/MM/dd HH:mm')}">開始日</span>
+                    <span th:if="${task.endDate != null}" 
+                          th:text="'終了日: ' + ${#temporals.format(task.endDate, 'yyyy/MM/dd HH:mm')}">終了日</span>
                 </div>
                 
                 <div class="progress-bar">

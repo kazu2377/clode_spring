@@ -48,6 +48,8 @@ public class TaskService {
             task.setPriority(updatedTask.getPriority());
             task.setProgress(updatedTask.getProgress());
             task.setDueDate(updatedTask.getDueDate());
+            task.setStartDate(updatedTask.getStartDate());
+            task.setEndDate(updatedTask.getEndDate());
             return taskRepository.save(task);
         }
         return null;
@@ -99,5 +101,9 @@ public class TaskService {
     
     public long getTaskCountByStatus(Task.TaskStatus status) {
         return taskRepository.countByStatus(status);
+    }
+    
+    public List<Task> getTasksForGanttChart() {
+        return taskRepository.findActiveTasks();
     }
 }

@@ -80,4 +80,11 @@ public class TaskController {
         model.addAttribute("newTask", new Task());
         return "search";
     }
+    
+    @GetMapping("/gantt")
+    public String ganttChart(Model model) {
+        List<Task> tasks = taskService.getTasksForGanttChart();
+        model.addAttribute("tasks", tasks);
+        return "gantt";
+    }
 }
