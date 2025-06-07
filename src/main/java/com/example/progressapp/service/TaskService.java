@@ -50,6 +50,10 @@ public class TaskService {
             task.setDueDate(updatedTask.getDueDate());
             task.setStartDate(updatedTask.getStartDate());
             task.setEndDate(updatedTask.getEndDate());
+            task.setEstimatedHours(updatedTask.getEstimatedHours());
+            task.setActualHours(updatedTask.getActualHours());
+            task.setActualStartTime(updatedTask.getActualStartTime());
+            task.setActualEndTime(updatedTask.getActualEndTime());
             return taskRepository.save(task);
         }
         return null;

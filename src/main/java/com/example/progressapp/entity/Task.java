@@ -39,6 +39,18 @@ public class Task {
     @Column(name = "end_date")
     private LocalDateTime endDate;
     
+    @Column(name = "estimated_hours")
+    private Double estimatedHours;
+    
+    @Column(name = "actual_hours")
+    private Double actualHours;
+    
+    @Column(name = "actual_start_time")
+    private LocalDateTime actualStartTime;
+    
+    @Column(name = "actual_end_time")
+    private LocalDateTime actualEndTime;
+    
     @Column(nullable = false)
     private Integer progress;
     
@@ -55,6 +67,7 @@ public class Task {
         this.status = TaskStatus.TODO;
         this.priority = 1;
         this.progress = 0;
+        this.actualHours = 0.0;
     }
     
     public Task(String title, String description) {
@@ -154,5 +167,58 @@ public class Task {
     
     public void setEndDate(LocalDateTime endDate) {
         this.endDate = endDate;
+    }
+    
+    public Double getEstimatedHours() {
+        return estimatedHours;
+    }
+    
+    public void setEstimatedHours(Double estimatedHours) {
+        this.estimatedHours = estimatedHours;
+    }
+    
+    public Double getActualHours() {
+        return actualHours;
+    }
+    
+    public void setActualHours(Double actualHours) {
+        this.actualHours = actualHours;
+    }
+    
+    public LocalDateTime getActualStartTime() {
+        return actualStartTime;
+    }
+    
+    public void setActualStartTime(LocalDateTime actualStartTime) {
+        this.actualStartTime = actualStartTime;
+    }
+    
+    public LocalDateTime getActualEndTime() {
+        return actualEndTime;
+    }
+    
+    public void setActualEndTime(LocalDateTime actualEndTime) {
+        this.actualEndTime = actualEndTime;
+    }
+    
+    public Double getRemainingHours() {
+        if (estimatedHours != null && actualHours != null) {
+            return Math.max(0, estimatedHours - actualHours);
+        }
+        return estimatedHours != null ? estimatedHours : 0.0;
+    }
+    
+    public Double getTimeVariance() {
+        if (estimatedHours != null && actualHours != null) {
+            return actualHours - estimatedHours;
+        }
+        return 0.0;
+    }
+    
+    public Double getEfficiencyRatio() {
+        if (estimatedHours != null && actualHours != null && actualHours > 0) {
+            return (estimatedHours / actualHours) * 100;
+        }
+        return 0.0;
     }
 }

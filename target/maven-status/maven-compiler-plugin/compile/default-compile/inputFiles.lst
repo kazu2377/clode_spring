@@ -1,6 +1,11 @@
 C:\Users\jtths\Desktop\clode_spring\src\main\java\com\example\progressapp\entity\Task.java
 C:\Users\jtths\Desktop\clode_spring\src\main\java\com\example\progressapp\service\TaskService.java
+C:\Users\jtths\Desktop\clode_spring\src\main\java\com\example\progressapp\service\TimeTrackingService.java
+C:\Users\jtths\Desktop\clode_spring\src\main\java\com\example\progressapp\dto\MonthlyTimeStats.java
+C:\Users\jtths\Desktop\clode_spring\src\main\java\com\example\progressapp\controller\TimeTrackingController.java
+C:\Users\jtths\Desktop\clode_spring\src\main\java\com\example\progressapp\entity\MonthlyBudget.java
 C:\Users\jtths\Desktop\clode_spring\src\main\java\com\example\progressapp\controller\TaskRestController.java
 C:\Users\jtths\Desktop\clode_spring\src\main\java\com\example\progressapp\controller\TaskController.java
+C:\Users\jtths\Desktop\clode_spring\src\main\java\com\example\progressapp\repository\MonthlyBudgetRepository.java
 C:\Users\jtths\Desktop\clode_spring\src\main\java\com\example\progressapp\ProgressAppApplication.java
 C:\Users\jtths\Desktop\clode_spring\src\main\java\com\example\progressapp\repository\TaskRepository.java

@@ -280,3 +280,69 @@ textarea {
         flex-wrap: wrap;
     }
 }
+
+/* 時間関連スタイル */
+.time-estimate {
+    color: #28a745;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.time-actual {
+    color: #007bff;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.time-remaining {
+    color: #ffc107;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.time-variance {
+    font-weight: bold;
+}
+
+.time-variance.over-budget {
+    color: #dc3545;
+}
+
+.time-variance.under-budget {
+    color: #28a745;
+}
+
+.time-start-btn, .time-stop-btn {
+    font-size: 0.8em;
+    padding: 5px 10px;
+}
+
+/* 通知スタイル */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    z-index: 1000;
+    transition: opacity 0.3s;
+}
+
+.notification-success {
+    background-color: #28a745;
+}
+
+.notification-error {
+    background-color: #dc3545;
+}
+
+.notification-warning {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.notification-info {
+    background-color: #007bff;
+}

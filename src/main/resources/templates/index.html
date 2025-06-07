@@ -30,6 +30,7 @@
                 <input type="text" name="keyword" placeholder="タスクを検索..." required>
                 <button type="submit" class="btn">検索</button>
                 <a th:href="@{/gantt}" class="btn btn-warning">ガントチャート</a>
+                <a th:href="@{/time/dashboard}" class="btn btn-success">時間管理</a>
             </form>
         </div>
 
@@ -72,6 +73,10 @@
                         <input type="datetime-local" id="endDate" th:field="*{endDate}">
                     </div>
                 </div>
+                <div class="form-group">
+                    <label for="estimatedHours">見積もり時間 (時間):</label>
+                    <input type="number" id="estimatedHours" th:field="*{estimatedHours}" step="0.5" min="0" placeholder="例: 8.5">
+                </div>
                 <button type="submit" class="btn">タスクを追加</button>
             </form>
         </div>
@@ -111,6 +116,18 @@
                           th:text="'終了日: ' + ${#temporals.format(task.endDate, 'yyyy/MM/dd HH:mm')}">終了日</span>
                 </div>
                 
+                <div class="task-meta" th:if="${task.estimatedHours != null or task.actualHours != null}">
+                    <span th:if="${task.estimatedHours != null}" 
+                          th:text="'見積: ' + ${task.estimatedHours} + '時間'" class="time-estimate">見積時間</span>
+                    <span th:if="${task.actualHours != null}" 
+                          th:text="'実績: ' + ${#numbers.formatDecimal(task.actualHours, 1, 1)} + '時間'" class="time-actual">実績時間</span>
+                    <span th:if="${task.estimatedHours != null and task.actualHours != null}" 
+                          th:text="'残り: ' + ${#numbers.formatDecimal(task.remainingHours, 1, 1)} + '時間'" class="time-remaining">残り時間</span>
+                    <span th:if="${task.estimatedHours != null and task.actualHours != null and task.timeVariance != 0}" 
+                          th:text="'差異: ' + ${task.timeVariance > 0 ? '+' : ''} + ${#numbers.formatDecimal(task.timeVariance, 1, 1)} + '時間'"
+                          th:class="'time-variance ' + ${task.timeVariance > 0 ? 'over-budget' : 'under-budget'}">差異</span>
+                </div>
+                
                 <div class="progress-bar">
                     <div class="progress-fill" th:style="'width: ' + ${task.progress} + '%'"></div>
                 </div>
@@ -118,6 +135,14 @@
                 
                 <div class="task-actions">
                     <a th:href="@{/tasks/{id}/edit(id=${task.id})}" class="btn">編集</a>
+                    
+                    <button type="button" class="btn btn-success time-start-btn" 
+                            th:data-task-id="${task.id}"
+                            th:if="${task.actualStartTime == null}">開始</button>
+                    
+                    <button type="button" class="btn btn-danger time-stop-btn" 
+                            th:data-task-id="${task.id}"
+                            th:if="${task.actualStartTime != null}">停止</button>
                     
                     <form th:action="@{/tasks/{id}/progress(id=${task.id})}" method="post" style="display: inline;">
                         <input type="number" name="progress" min="0" max="100" th:value="${task.progress}" style="width: 60px;">
@@ -141,5 +166,12 @@
             </div>
         </div>
     </div>
+
+    <script th:src="@{/js/time-tracking.js}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            initTimeTrackingButtons();
+        });
+    </script>
 </body>
 </html>

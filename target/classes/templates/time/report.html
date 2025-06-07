@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>効率性レポート - 進捗管理アプリ</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/time.css}">
+</head>
+<body>
+    <div class="container">
+        <div class="dashboard-header">
+            <h1>効率性レポート</h1>
+            <div class="nav-links">
+                <a th:href="@{/}" class="btn">タスク一覧</a>
+                <a th:href="@{/time/dashboard}" class="btn btn-success">ダッシュボード</a>
+                <a th:href="@{/time/monthly}" class="btn btn-warning">月次管理</a>
+            </div>
+        </div>
+
+        <!-- 全体効率性 -->
+        <div class="overall-efficiency">
+            <h2>全体効率性指標</h2>
+            <div class="efficiency-score">
+                <div class="score-circle">
+                    <div class="score-number" th:text="${#numbers.formatDecimal(averageEfficiency ?: 0, 1, 1)} + '%'">0%</div>
+                    <div class="score-label">平均効率性</div>
+                </div>
+                <div class="efficiency-explanation">
+                    <p>効率性 = (見積もり時間 ÷ 実績時間) × 100</p>
+                    <ul>
+                        <li>100%以上: 見積もりより早く完了</li>
+                        <li>100%: 見積もり通り</li>
+                        <li>100%未満: 見積もりより時間がかかった</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 月次推移 -->
+        <div class="monthly-trends">
+            <h2>月次効率性推移</h2>
+            <div class="trend-chart">
+                <canvas id="efficiencyChart" width="800" height="400"></canvas>
+            </div>
+        </div>
+
+        <!-- 見積もり精度分析 -->
+        <div class="estimation-analysis" th:if="${!tasksWithVariance.empty}">
+            <h2>見積もり精度分析</h2>
+            <div class="analysis-grid">
+                <div class="analysis-item">
+                    <div class="analysis-title">見積もりオーバー</div>
+                    <div class="analysis-count" 
+                         th:text="${tasksWithVariance.stream().filter(t -> t.timeVariance > 0).count()}" 
+                         th:data-percentage="${tasksWithVariance.stream().filter(t -> t.timeVariance > 0).count() * 100.0 / tasksWithVariance.size()}">0</div>
+                    <div class="analysis-percentage" 
+                         th:text="'(' + ${#numbers.formatDecimal(tasksWithVariance.stream().filter(t -> t.timeVariance > 0).count() * 100.0 / tasksWithVariance.size(), 1, 1)} + '%)'">(%)</div>
+                </div>
+                
+                <div class="analysis-item">
+                    <div class="analysis-title">見積もり通り</div>
+                    <div class="analysis-count" 
+                         th:text="${tasksWithVariance.stream().filter(t -> Math.abs(t.timeVariance) <= 0.1).count()}">0</div>
+                    <div class="analysis-percentage" 
+                         th:text="'(' + ${#numbers.formatDecimal(tasksWithVariance.stream().filter(t -> Math.abs(t.timeVariance) <= 0.1).count() * 100.0 / tasksWithVariance.size(), 1, 1)} + '%)'">(%)</div>
+                </div>
+                
+                <div class="analysis-item">
+                    <div class="analysis-title">見積もりアンダー</div>
+                    <div class="analysis-count" 
+                         th:text="${tasksWithVariance.stream().filter(t -> t.timeVariance < -0.1).count()}">0</div>
+                    <div class="analysis-percentage" 
+                         th:text="'(' + ${#numbers.formatDecimal(tasksWithVariance.stream().filter(t -> t.timeVariance < -0.1).count() * 100.0 / tasksWithVariance.size(), 1, 1)} + '%)'">(%)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 詳細タスク分析 -->
+        <div class="detailed-analysis" th:if="${!tasksWithVariance.empty}">
+            <h2>タスク別詳細分析</h2>
+            <div class="analysis-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>タスク名</th>
+                            <th>見積時間</th>
+                            <th>実績時間</th>
+                            <th>差異</th>
+                            <th>効率性</th>
+                            <th>ステータス</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="task : ${tasksWithVariance}">
+                            <td th:text="${task.title}" class="task-name">タスク名</td>
+                            <td th:text="${task.estimatedHours} + 'h'" class="estimated-hours">0h</td>
+                            <td th:text="${#numbers.formatDecimal(task.actualHours, 1, 1)} + 'h'" class="actual-hours">0h</td>
+                            <td th:text="${task.timeVariance > 0 ? '+' : ''} + ${#numbers.formatDecimal(task.timeVariance, 1, 1)} + 'h'" 
+                                th:class="'variance ' + ${task.timeVariance > 0 ? 'over' : task.timeVariance < 0 ? 'under' : 'exact'}">0h</td>
+                            <td th:text="${#numbers.formatDecimal(task.efficiencyRatio, 1, 1)} + '%'" 
+                                th:class="'efficiency ' + ${task.efficiencyRatio >= 100 ? 'good' : 'needs-improvement'}">0%</td>
+                            <td th:text="${task.status == 'TODO' ? '未開始' : 
+                                         task.status == 'IN_PROGRESS' ? '進行中' : 
+                                         task.status == 'COMPLETED' ? '完了' : 'キャンセル'}"
+                                th:class="'status-' + ${#strings.toLowerCase(task.status)}">ステータス</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 改善提案 -->
+        <div class="improvement-suggestions">
+            <h2>改善提案</h2>
+            <div class="suggestions-list">
+                <div class="suggestion-item" th:if="${averageEfficiency < 80}">
+                    <div class="suggestion-icon">⚠️</div>
+                    <div class="suggestion-content">
+                        <h4>見積もり精度の向上が必要</h4>
+                        <p>平均効率性が80%を下回っています。過去のデータを参考に、より現実的な見積もりを行いましょう。</p>
+                    </div>
+                </div>
+                
+                <div class="suggestion-item" th:if="${averageEfficiency >= 120}">
+                    <div class="suggestion-icon">📈</div>
+                    <div class="suggestion-content">
+                        <h4>見積もりが過大の可能性</h4>
+                        <p>多くのタスクで見積もり時間より早く完了しています。見積もり時間を見直してより効率的な計画を立てましょう。</p>
+                    </div>
+                </div>
+                
+                <div class="suggestion-item" th:if="${averageEfficiency >= 90 and averageEfficiency <= 110}">
+                    <div class="suggestion-icon">✅</div>
+                    <div class="suggestion-content">
+                        <h4>良好な見積もり精度</h4>
+                        <p>見積もりと実績の差が少なく、良好な時間管理ができています。この調子を維持しましょう。</p>
+                    </div>
+                </div>
+                
+                <div class="suggestion-item">
+                    <div class="suggestion-icon">💡</div>
+                    <div class="suggestion-content">
+                        <h4>継続的な改善</h4>
+                        <p>定期的にこのレポートを確認し、時間管理スキルの向上に役立ててください。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/time-tracking.js}"></script>
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            const monthlyStats = /*[[${monthlyStats}]]*/ [];
+            
+            if (monthlyStats && monthlyStats.length > 0) {
+                initEfficiencyChart(monthlyStats);
+            }
+        });
+    </script>
+</body>
+</html>

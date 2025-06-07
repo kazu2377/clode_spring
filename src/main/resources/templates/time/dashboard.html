@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>時間管理ダッシュボード - 進捗管理アプリ</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/time.css}">
+</head>
+<body>
+    <div class="container">
+        <div class="dashboard-header">
+            <h1>時間管理ダッシュボード</h1>
+            <div class="nav-links">
+                <a th:href="@{/}" class="btn">タスク一覧</a>
+                <a th:href="@{/time/monthly}" class="btn btn-warning">月次管理</a>
+                <a th:href="@{/time/report}" class="btn btn-success">効率性レポート</a>
+            </div>
+        </div>
+
+        <!-- 当月統計 -->
+        <div class="time-stats-container">
+            <h2>当月統計</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" th:text="${currentMonthStats.budgetHours ?: 0}">0</div>
+                    <div class="stat-label">予算時間</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" th:text="${#numbers.formatDecimal(currentMonthStats.actualHours ?: 0, 1, 1)}">0</div>
+                    <div class="stat-label">実績時間</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" th:text="${#numbers.formatDecimal(currentMonthStats.remainingHours ?: 0, 1, 1)}">0</div>
+                    <div class="stat-label">残り時間</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" th:text="${#numbers.formatDecimal(averageEfficiency ?: 0, 1, 1)} + '%'">0%</div>
+                    <div class="stat-label">平均効率</div>
+                </div>
+            </div>
+            
+            <div class="budget-progress" th:if="${currentMonthStats.budgetHours != null and currentMonthStats.budgetHours > 0}">
+                <div class="progress-label">予算使用率</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" 
+                         th:style="'width: ' + ${currentMonthStats.budgetUtilization} + '%'"
+                         th:classappend="${currentMonthStats.budgetExceeded ? 'over-budget' : ''}"></div>
+                </div>
+                <div class="progress-text" th:text="${#numbers.formatDecimal(currentMonthStats.budgetUtilization, 1, 1)} + '%'">0%</div>
+            </div>
+        </div>
+
+        <!-- 6ヶ月推移 -->
+        <div class="time-chart-container">
+            <h2>時間推移 (過去6ヶ月)</h2>
+            <div class="chart-wrapper">
+                <canvas id="timeChart" width="800" height="400"></canvas>
+            </div>
+        </div>
+
+        <!-- 時間差異があるタスク -->
+        <div class="variance-tasks" th:if="${!timeVarianceTasks.empty}">
+            <h2>見積もりと実績に差異があるタスク</h2>
+            <div class="task-list-compact">
+                <div th:each="task : ${timeVarianceTasks}" class="task-item-compact">
+                    <div class="task-info">
+                        <span class="task-title" th:text="${task.title}">タスク名</span>
+                        <span class="task-times">
+                            見積: <span th:text="${task.estimatedHours}">0</span>h | 
+                            実績: <span th:text="${#numbers.formatDecimal(task.actualHours, 1, 1)}">0</span>h
+                        </span>
+                    </div>
+                    <div class="task-variance" 
+                         th:class="'variance ' + ${task.timeVariance > 0 ? 'over' : 'under'}"
+                         th:text="${task.timeVariance > 0 ? '+' : ''} + ${#numbers.formatDecimal(task.timeVariance, 1, 1)} + 'h'">
+                        差異
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 時間消費の多いタスク -->
+        <div class="top-time-tasks" th:if="${!topTimeTasks.empty}">
+            <h2>時間消費の多いタスク (TOP 10)</h2>
+            <div class="task-list-compact">
+                <div th:each="task : ${topTimeTasks}" class="task-item-compact">
+                    <div class="task-info">
+                        <span class="task-title" th:text="${task.title}">タスク名</span>
+                        <span class="task-status" 
+                              th:text="${task.status == 'TODO' ? '未開始' : 
+                                       task.status == 'IN_PROGRESS' ? '進行中' : 
+                                       task.status == 'COMPLETED' ? '完了' : 'キャンセル'}"
+                              th:class="'status-' + ${#strings.toLowerCase(task.status)}">ステータス</span>
+                    </div>
+                    <div class="task-time">
+                        <span th:text="${#numbers.formatDecimal(task.actualHours, 1, 1)} + '時間'">0時間</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 期限切れタスク -->
+        <div class="overdue-tasks" th:if="${!overdueTasks.empty}">
+            <h2>期限切れタスク</h2>
+            <div class="task-list-compact alert">
+                <div th:each="task : ${overdueTasks}" class="task-item-compact overdue">
+                    <div class="task-info">
+                        <span class="task-title" th:text="${task.title}">タスク名</span>
+                        <span class="task-due" th:text="'期限: ' + ${#temporals.format(task.endDate, 'yyyy/MM/dd')}">期限</span>
+                    </div>
+                    <div class="task-priority" 
+                         th:class="'priority-' + ${task.priority == 3 ? 'high' : task.priority == 2 ? 'medium' : 'low'}"
+                         th:text="${task.priority == 3 ? '高' : task.priority == 2 ? '中' : '低'}">優先度</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:src="@{/js/time-tracking.js}"></script>
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            const sixMonthsData = /*[[${sixMonthsStats}]]*/ [];
+            
+            if (sixMonthsData && sixMonthsData.length > 0) {
+                initTimeChart(sixMonthsData);
+            }
+            
+            initTimeTrackingButtons();
+        });
+    </script>
+</body>
+</html>

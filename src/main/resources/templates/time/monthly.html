@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>月次時間管理 - 進捗管理アプリ</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/time.css}">
+</head>
+<body>
+    <div class="container">
+        <div class="dashboard-header">
+            <h1>月次時間管理</h1>
+            <div class="nav-links">
+                <a th:href="@{/}" class="btn">タスク一覧</a>
+                <a th:href="@{/time/dashboard}" class="btn btn-success">ダッシュボード</a>
+                <a th:href="@{/time/report}" class="btn btn-warning">効率性レポート</a>
+            </div>
+        </div>
+
+        <!-- 月選択 -->
+        <div class="month-selector">
+            <form method="get">
+                <div class="form-group">
+                    <label for="yearMonth">対象月:</label>
+                    <input type="month" id="yearMonth" name="yearMonth" 
+                           th:value="${targetMonth}" 
+                           onchange="this.form.submit()">
+                </div>
+            </form>
+        </div>
+
+        <!-- 月次統計 -->
+        <div class="monthly-stats">
+            <h2 th:text="${targetMonth} + ' 統計'">月次統計</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" th:text="${monthlyStats.budgetHours ?: 0}">0</div>
+                    <div class="stat-label">予算時間</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" th:text="${#numbers.formatDecimal(monthlyStats.actualHours ?: 0, 1, 1)}">0</div>
+                    <div class="stat-label">実績時間</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" th:text="${#numbers.formatDecimal(monthlyStats.remainingHours ?: 0, 1, 1)}">0</div>
+                    <div class="stat-label">残り予算</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" th:text="${#numbers.formatDecimal(remainingHours ?: 0, 1, 1)}">0</div>
+                    <div class="stat-label">タスク残り時間</div>
+                </div>
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" th:text="${monthlyStats.taskCount ?: 0}">0</div>
+                    <div class="stat-label">総タスク数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" th:text="${monthlyStats.completedTasks ?: 0}">0</div>
+                    <div class="stat-label">完了タスク</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" th:text="${monthlyStats.overdueTasks ?: 0}">0</div>
+                    <div class="stat-label">期限切れ</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" th:text="${#numbers.formatDecimal(monthlyStats.efficiency ?: 0, 1, 1)} + '%'">0%</div>
+                    <div class="stat-label">効率性</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 予算設定 -->
+        <div class="budget-setting">
+            <h2>月次予算設定</h2>
+            <form th:action="@{/time/budget}" method="post" class="budget-form">
+                <input type="hidden" name="yearMonth" th:value="${targetMonth}">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="budgetHours">月間予算時間:</label>
+                        <input type="number" id="budgetHours" name="budgetHours" 
+                               step="0.5" min="0" required
+                               placeholder="例: 160">
+                    </div>
+                    <div class="form-group">
+                        <label for="workingDays">稼働日数:</label>
+                        <input type="number" id="workingDays" name="workingDays" 
+                               min="1" max="31" required
+                               placeholder="例: 20">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="dailyHours">1日あたり時間:</label>
+                    <input type="number" id="dailyHours" name="dailyHours" 
+                           step="0.5" min="0" required
+                           placeholder="例: 8">
+                </div>
+                
+                <button type="submit" class="btn btn-success">予算を設定</button>
+            </form>
+        </div>
+
+        <!-- 予算使用率 -->
+        <div class="budget-usage" th:if="${monthlyStats.budgetHours != null and monthlyStats.budgetHours > 0}">
+            <h2>予算使用状況</h2>
+            <div class="usage-chart">
+                <div class="usage-bar">
+                    <div class="usage-fill" 
+                         th:style="'width: ' + ${monthlyStats.budgetUtilization} + '%'"
+                         th:classappend="${monthlyStats.budgetExceeded ? 'over-budget' : ''}"></div>
+                </div>
+                <div class="usage-details">
+                    <span th:text="'使用率: ' + ${#numbers.formatDecimal(monthlyStats.budgetUtilization, 1, 1)} + '%'">使用率</span>
+                    <span th:if="${monthlyStats.budgetExceeded}" class="budget-warning">予算超過!</span>
+                </div>
+            </div>
+            
+            <div class="daily-average" th:if="${monthlyStats.dailyAverage != null}">
+                <span th:text="'1日平均: ' + ${#numbers.formatDecimal(monthlyStats.dailyAverage, 1, 1)} + '時間'">1日平均</span>
+            </div>
+        </div>
+
+        <!-- 予算なしの場合のメッセージ -->
+        <div class="no-budget-message" th:if="${monthlyStats.budgetHours == null or monthlyStats.budgetHours == 0}">
+            <div class="alert-info">
+                <h3>予算が設定されていません</h3>
+                <p>月次予算を設定すると、より詳細な時間管理ができます。</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

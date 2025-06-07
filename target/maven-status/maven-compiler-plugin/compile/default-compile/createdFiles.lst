@@ -1,7 +1,7 @@
-com\example\progressapp\controller\TaskController.class
+com\example\progressapp\repository\TaskRepository.class
+com\example\progressapp\ProgressAppApplication.class
+com\example\progressapp\entity\Task.class
 com\example\progressapp\entity\Task$TaskStatus.class
 com\example\progressapp\service\TaskService.class
-com\example\progressapp\repository\TaskRepository.class
-com\example\progressapp\entity\Task.class
 com\example\progressapp\controller\TaskRestController.class
-com\example\progressapp\ProgressAppApplication.class
+com\example\progressapp\controller\TaskController.class
